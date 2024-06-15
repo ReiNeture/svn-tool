@@ -47,13 +47,11 @@ public class DiffGenerator {
                 e.printStackTrace();
             }
             
-            // 檢查並刪除空的 diff 檔案
-            if(preserveFileStructure) {
-	            if (diffFile.length() == 0) {
-	                System.out.println("Deleting empty diff file: " + diffFile.getPath());
-	                diffFile.delete();
+	        if (diffFile.length() == 0) {
+	            System.out.println("Deleting empty diff file: " + diffFile.getPath());
+	            diffFile.delete();
 	                
-	                // 檢查並刪除空的目錄
+	            if(preserveFileStructure) {
 	                File parentDir = diffFile.getParentFile();
 	                deleteEmptyDirs(parentDir, new File(outputDir));
 	            }
