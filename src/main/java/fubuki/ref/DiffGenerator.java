@@ -27,7 +27,15 @@ public class DiffGenerator {
     public void generateDiffs(SVNURL url, Set<String> modifiedFiles, long startRevision, long endRevision, String outputDir, boolean preserveFileStructure) throws SVNException {
         Map<String, Integer> fileNameCount = SVNUtilities.getFileNameCount(modifiedFiles);
 
+        SVNUtilities.cleanDirectory(outputDir);
+        
         for (String file : modifiedFiles) {
+        	
+        	if (SVNUtilities.isBinaryFile(file)) {
+                System.out.println("Skipping binary file: " + file);
+                continue;
+            }
+        	
             if (!SVNUtilities.fileExistsInRevision(url, file, endRevision, clientManager)) {
                 System.out.println("Skipping non-existent file: " + file);
                 continue;
@@ -45,10 +53,14 @@ public class DiffGenerator {
                 e.printStackTrace();
             }
             
-            // 檢查是否為空文件
-            if (diffFile.length() == 0) {
-                System.out.println("Deleting empty diff file: " + diffFile.getPath());
-                diffFile.delete();
+	        if (diffFile.length() == 0) {
+	            System.out.println("Deleting empty diff file: " + diffFile.getPath());
+	            diffFile.delete();
+	                
+	            if(preserveFileStructure) {
+	                File parentDir = diffFile.getParentFile();
+	                deleteEmptyDirs(parentDir, new File(outputDir));
+	            }
             }
         }
     }
@@ -80,6 +92,16 @@ public class DiffGenerator {
         } catch (Exception e) {
             e.printStackTrace();
             return false;
+        }
+    }
+    
+    private static void deleteEmptyDirs(File dir, File outputDir) {
+        if (dir.isDirectory() && dir.list().length == 0 
+        		&& !dir.equals(outputDir) ) {
+        	
+            System.out.println("Deleting empty directory: " + dir.getPath());
+            dir.delete();
+            deleteEmptyDirs(dir.getParentFile(), outputDir);
         }
     }
 }

@@ -1,8 +1,11 @@
 package fubuki.ref;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -20,6 +23,12 @@ import org.tmatesoft.svn.core.wc.SVNWCClient;
 
 public class SVNUtilities {
 
+	private static final Set<String> BINARY_EXTENSIONS = new HashSet<>(Arrays.asList(
+	        "gif", "jpg", "jpeg", "png", "bmp", "tiff", "ico", "mp3", "wav", "ogg",
+	        "avi", "mp4", "mov", "mkv", "wmv", "flv", "pdf", "doc", "docx", "xls",
+	        "xlsx", "ppt", "pptx", "exe", "dll", "bin", "class", "jar", "rpt", "classpath"
+	    ));
+	
     public static Set<String> getModifiedFiles(SVNURL url, long startRevision, long endRevision, SVNClientManager clientManager) throws SVNException {
         Set<String> modifiedFiles = new HashSet<>();
         SVNLogClient logClient = clientManager.getLogClient();
@@ -60,5 +69,39 @@ public class SVNUtilities {
             fileNameCount.put(fileName, fileNameCount.getOrDefault(fileName, 0) + 1);
         }
         return fileNameCount;
+    }
+    
+    public static void cleanDirectory(String directoryPath) {
+        Path directory = Paths.get(directoryPath);
+        try {
+        	
+        	if (!Files.exists(directory)) {
+                Files.createDirectories(directory);
+                return;
+            }
+        	
+            Files.walk(directory)
+                 .sorted(java.util.Comparator.reverseOrder())
+                 .map(Path::toFile)
+                 .forEach(File::delete);
+            Files.createDirectories(directory);
+            
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+    
+    private static String getFileExtension(String filePath) {
+        String fileName = new File(filePath).getName();
+        int dotIndex = fileName.lastIndexOf('.');
+        if (dotIndex > -1 && dotIndex < fileName.length() - 1) {
+            return fileName.substring(dotIndex + 1);
+        }
+        return "";
+    }
+    
+    public static boolean isBinaryFile(String filePath) {
+        String extension = getFileExtension(filePath).toLowerCase();
+        return BINARY_EXTENSIONS.contains(extension);
     }
 }
