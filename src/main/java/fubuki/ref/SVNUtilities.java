@@ -1,6 +1,8 @@
 package fubuki.ref;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
@@ -60,5 +62,25 @@ public class SVNUtilities {
             fileNameCount.put(fileName, fileNameCount.getOrDefault(fileName, 0) + 1);
         }
         return fileNameCount;
+    }
+    
+    public static void cleanDirectory(String directoryPath) {
+        Path directory = Paths.get(directoryPath);
+        try {
+        	
+        	if (!Files.exists(directory)) {
+                Files.createDirectories(directory);
+                return;
+            }
+        	
+            Files.walk(directory)
+                 .sorted(java.util.Comparator.reverseOrder())
+                 .map(Path::toFile)
+                 .forEach(File::delete);
+            Files.createDirectories(directory);
+            
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }

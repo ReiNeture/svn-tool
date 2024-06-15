@@ -1,5 +1,6 @@
 package fubuki.ref;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
@@ -26,6 +27,8 @@ public class DiffGenerator {
     public void generateDiffs(SVNURL url, Set<String> modifiedFiles, long startRevision, long endRevision, String outputDir, boolean preserveFileStructure) throws SVNException {
         Map<String, Integer> fileNameCount = SVNUtilities.getFileNameCount(modifiedFiles);
 
+        SVNUtilities.cleanDirectory(outputDir);
+        
         for (String file : modifiedFiles) {
             if (!SVNUtilities.fileExistsInRevision(url, file, endRevision, clientManager)) {
                 System.out.println("Skipping non-existent file: " + file);
@@ -72,6 +75,19 @@ public class DiffGenerator {
         File parentDir = file.getParentFile();
         if (!parentDir.exists()) {
             parentDir.mkdirs();
+        }
+    }
+    
+    public static boolean isDiffEmpty(SVNURL url, String filePath, long startRevision, long endRevision, SVNClientManager clientManager) throws SVNException {
+        SVNDiffClient diffClient = clientManager.getDiffClient();
+        try (ByteArrayOutputStream diffStream = new ByteArrayOutputStream()) {
+            diffClient.doDiff(url.appendPath(filePath, false), SVNRevision.create(startRevision), 
+                              url.appendPath(filePath, false), SVNRevision.create(endRevision), 
+                              SVNDepth.INFINITY, true, diffStream);
+            return diffStream.size() == 0;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
         }
     }
     

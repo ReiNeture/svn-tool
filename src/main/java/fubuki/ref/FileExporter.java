@@ -12,39 +12,49 @@ import java.util.Set;
 
 public class FileExporter {
 
-    private final SVNClientManager clientManager;
+	private final SVNClientManager clientManager;
 
-    public FileExporter(SVNClientManager clientManager) {
-        this.clientManager = clientManager;
-    }
+	public FileExporter(SVNClientManager clientManager) {
+		this.clientManager = clientManager;
+	}
 
-    public void exportFiles(SVNURL url, Set<String> modifiedFiles, long endRevision, String exportDir) {
-        SVNUpdateClient updateClient = clientManager.getUpdateClient();
+	public void exportFiles(SVNURL url, Set<String> modifiedFiles, long startRevision, long endRevision, String exportDir) {
+		
+		SVNUpdateClient updateClient = clientManager.getUpdateClient();
 
-        for (String file : modifiedFiles) {
-            if (!SVNUtilities.fileExistsInRevision(url, file, endRevision, clientManager)) {
-                System.out.println("Skipping non-existent file: " + file);
-                continue;
-            }
+		SVNUtilities.cleanDirectory(exportDir);
+		for (String file : modifiedFiles) {
 
-            try {
-                SVNURL fileUrl = url.appendPath(file, false);
-                File exportFile = new File(exportDir, file);
-                createParentDirs(exportFile);
+			if (!SVNUtilities.fileExistsInRevision(url, file, endRevision, clientManager)) {
+				System.out.println("Skipping non-existent file: " + file);
+				continue;
+			}
 
-                updateClient.doExport(fileUrl, exportFile, SVNRevision.create(endRevision), SVNRevision.create(endRevision), null, true, SVNDepth.FILES);
+			try {
+				// Check if the file has modifications
+				if (DiffGenerator.isDiffEmpty(url, file, startRevision, endRevision, clientManager)) {
+					System.out.println("Skipping unmodified file: " + file);
+					continue;
+				}
+
+				SVNURL fileUrl = url.appendPath(file, false);
+				File exportFile = new File(exportDir, file);
+				createParentDirs(exportFile);
+
+				updateClient.doExport(fileUrl, exportFile, SVNRevision.create(endRevision),
+						SVNRevision.create(endRevision), null, true, SVNDepth.FILES);
 //                System.out.println("Exported: " + file);
 
-            } catch (SVNException e) {
-                e.printStackTrace();
-            }
-        }
-    }
+			} catch (SVNException e) {
+				e.printStackTrace();
+			}
+		}
+	}
 
-    private void createParentDirs(File file) {
-        File parentDir = file.getParentFile();
-        if (!parentDir.exists()) {
-            parentDir.mkdirs();
-        }
-    }
+	private void createParentDirs(File file) {
+		File parentDir = file.getParentFile();
+		if (!parentDir.exists()) {
+			parentDir.mkdirs();
+		}
+	}
 }
