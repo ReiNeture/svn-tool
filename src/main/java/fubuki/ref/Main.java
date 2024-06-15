@@ -9,12 +9,12 @@ import java.util.Set;
 public class Main {
 
     public static void main(String[] args) {
-        final String repoUrl = "";  // 替換為你的 SVN 儲存庫 URL
+        final String repoUrl = "http://192.168.18.207:8085/svn/TBB_edge";  // 替換為你的 SVN 儲存庫 URL
         long startRevision = 576;
         long endRevision = 578;
         final String outputDir = "./svn_diffs";
         final String exportDir = "./svn_source";
-        boolean preserveFileStructure = false; // DIFF是否複製目錄結構
+        boolean preserveFileStructure = true; // DIFF是否複製目錄結構
 
         try {
             SVNURL url = SVNURL.parseURIEncoded(repoUrl);

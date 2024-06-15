@@ -1,6 +1,5 @@
 package fubuki.ref;
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
@@ -45,10 +44,16 @@ public class DiffGenerator {
                 e.printStackTrace();
             }
             
-            // 檢查是否為空文件
-            if (diffFile.length() == 0) {
-                System.out.println("Deleting empty diff file: " + diffFile.getPath());
-                diffFile.delete();
+            // 檢查並刪除空的 diff 檔案
+            if(preserveFileStructure) {
+	            if (diffFile.length() == 0) {
+	                System.out.println("Deleting empty diff file: " + diffFile.getPath());
+	                diffFile.delete();
+	                
+	                // 檢查並刪除空的目錄
+	                File parentDir = diffFile.getParentFile();
+	                deleteEmptyDirs(parentDir, new File(outputDir));
+	            }
             }
         }
     }
@@ -70,16 +75,13 @@ public class DiffGenerator {
         }
     }
     
-    public static boolean isDiffEmpty(SVNURL url, String filePath, long startRevision, long endRevision, SVNClientManager clientManager) throws SVNException {
-        SVNDiffClient diffClient = clientManager.getDiffClient();
-        try (ByteArrayOutputStream diffStream = new ByteArrayOutputStream()) {
-            diffClient.doDiff(url.appendPath(filePath, false), SVNRevision.create(startRevision), 
-                              url.appendPath(filePath, false), SVNRevision.create(endRevision), 
-                              SVNDepth.INFINITY, true, diffStream);
-            return diffStream.size() == 0;
-        } catch (Exception e) {
-            e.printStackTrace();
-            return false;
+    private static void deleteEmptyDirs(File dir, File outputDir) {
+        if (dir.isDirectory() && dir.list().length == 0 
+        		&& !dir.equals(outputDir) ) {
+        	
+            System.out.println("Deleting empty directory: " + dir.getPath());
+            dir.delete();
+            deleteEmptyDirs(dir.getParentFile(), outputDir);
         }
     }
 }
