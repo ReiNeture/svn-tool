@@ -30,6 +30,12 @@ public class DiffGenerator {
         SVNUtilities.cleanDirectory(outputDir);
         
         for (String file : modifiedFiles) {
+        	
+        	if (SVNUtilities.isBinaryFile(file)) {
+                System.out.println("Skipping binary file: " + file);
+                continue;
+            }
+        	
             if (!SVNUtilities.fileExistsInRevision(url, file, endRevision, clientManager)) {
                 System.out.println("Skipping non-existent file: " + file);
                 continue;

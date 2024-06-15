@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -22,6 +23,12 @@ import org.tmatesoft.svn.core.wc.SVNWCClient;
 
 public class SVNUtilities {
 
+	private static final Set<String> BINARY_EXTENSIONS = new HashSet<>(Arrays.asList(
+	        "gif", "jpg", "jpeg", "png", "bmp", "tiff", "ico", "mp3", "wav", "ogg",
+	        "avi", "mp4", "mov", "mkv", "wmv", "flv", "pdf", "doc", "docx", "xls",
+	        "xlsx", "ppt", "pptx", "exe", "dll", "bin", "class", "jar", "rpt", "classpath"
+	    ));
+	
     public static Set<String> getModifiedFiles(SVNURL url, long startRevision, long endRevision, SVNClientManager clientManager) throws SVNException {
         Set<String> modifiedFiles = new HashSet<>();
         SVNLogClient logClient = clientManager.getLogClient();
@@ -82,5 +89,19 @@ public class SVNUtilities {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+    
+    private static String getFileExtension(String filePath) {
+        String fileName = new File(filePath).getName();
+        int dotIndex = fileName.lastIndexOf('.');
+        if (dotIndex > -1 && dotIndex < fileName.length() - 1) {
+            return fileName.substring(dotIndex + 1);
+        }
+        return "";
+    }
+    
+    public static boolean isBinaryFile(String filePath) {
+        String extension = getFileExtension(filePath).toLowerCase();
+        return BINARY_EXTENSIONS.contains(extension);
     }
 }
