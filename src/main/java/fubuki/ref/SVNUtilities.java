@@ -34,7 +34,7 @@ public class SVNUtilities {
     public static Set<String> getModifiedPaths(SVNURL url, long startRevision, long endRevision, SVNClientManager clientManager) throws SVNException {
         Set<String> modifiedFiles = new HashSet<>();
         SVNLogClient logClient = clientManager.getLogClient();
-        logClient.doLog(url, new String[]{"/TBBWeb/src/control/ExecuteflowServlet.java"}, SVNRevision.UNDEFINED, SVNRevision.create(startRevision + 1),
+        logClient.doLog(url, new String[]{""}, SVNRevision.UNDEFINED, SVNRevision.create(startRevision + 1),
                 SVNRevision.create(endRevision), true, true, 0,
                 logEntry -> modifiedFiles.addAll(logEntry.getChangedPaths().values().stream()
                         .filter(entryPath -> entryPath.getKind() == SVNNodeKind.FILE)
@@ -47,7 +47,7 @@ public class SVNUtilities {
     public static Set<ModifiedFileEntry> getModifiedFiles(SVNURL url, long startRevision, long endRevision, SVNClientManager clientManager) throws SVNException {
         Set<ModifiedFileEntry> modifiedFiles = new HashSet<>();
         SVNLogClient logClient = clientManager.getLogClient();
-        logClient.doLog(url, new String[]{"/TBBWeb/src/control/ExecuteflowServlet.java"}, SVNRevision.UNDEFINED, SVNRevision.create(startRevision + 1),
+        logClient.doLog(url, new String[]{""}, SVNRevision.UNDEFINED, SVNRevision.create(startRevision + 1),
                 SVNRevision.create(endRevision), true, true, 0,
                 logEntry -> modifiedFiles.addAll(
                         logEntry.getChangedPaths().values().stream()

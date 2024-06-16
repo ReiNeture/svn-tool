@@ -8,7 +8,6 @@ import java.util.Map;
 import java.util.Set;
 
 import org.tmatesoft.svn.core.SVNDepth;
-import org.tmatesoft.svn.core.SVNException;
 import org.tmatesoft.svn.core.SVNURL;
 import org.tmatesoft.svn.core.wc.SVNClientManager;
 import org.tmatesoft.svn.core.wc.SVNDiffClient;
@@ -24,7 +23,7 @@ public class DiffGenerator {
         this.diffClient = clientManager.getDiffClient();
     }
 
-    public void generateDiffs(SVNURL url, Set<String> modifiedFiles, long startRevision, long endRevision, String outputDir, boolean preserveFileStructure) throws SVNException {
+    public void generateDiffs(SVNURL url, Set<String> modifiedFiles, long startRevision, long endRevision, String outputDir, boolean preserveFileStructure) {
         Map<String, Integer> fileNameCount = SVNUtilities.getFileNameCount(modifiedFiles);
 
         SVNUtilities.cleanDirectory(outputDir);
@@ -36,11 +35,6 @@ public class DiffGenerator {
                 continue;
             }
         	
-            if (!SVNUtilities.fileExistsInRevision(url, file, endRevision, clientManager)) {
-                System.out.println("Skipping non-existent file: " + file);
-                continue;
-            }
-
             String diffFileName = preserveFileStructure ? outputDir + File.separator + file + ".diff" : getDiffFileName(file, fileNameCount, outputDir);
             File diffFile = new File(diffFileName);
             createParentDirs(diffFile);
@@ -49,8 +43,9 @@ public class DiffGenerator {
                 diffClient.doDiff(url.appendPath(file, false), SVNRevision.create(startRevision),
                         url.appendPath(file, false), SVNRevision.create(endRevision),
                         SVNDepth.INFINITY, true, writer);
+                
             } catch (Exception e) {
-                e.printStackTrace();
+            	System.err.println(e.getMessage());
             }
             
 	        if (diffFile.length() == 0) {
@@ -82,7 +77,7 @@ public class DiffGenerator {
         }
     }
     
-    public static boolean isDiffEmpty(SVNURL url, String filePath, long startRevision, long endRevision, SVNClientManager clientManager) throws SVNException {
+    public static boolean isDiffEmpty(SVNURL url, String filePath, long startRevision, long endRevision, SVNClientManager clientManager) {
         SVNDiffClient diffClient = clientManager.getDiffClient();
         try (ByteArrayOutputStream diffStream = new ByteArrayOutputStream()) {
             diffClient.doDiff(url.appendPath(filePath, false), SVNRevision.create(startRevision), 
@@ -91,7 +86,7 @@ public class DiffGenerator {
             return diffStream.size() == 0;
         } catch (Exception e) {
             e.printStackTrace();
-            return false;
+            return true;
         }
     }
     

@@ -25,14 +25,8 @@ public class FileExporter {
 		SVNUtilities.cleanDirectory(exportDir);
 		for (String file : modifiedFiles) {
 
-			if (!SVNUtilities.fileExistsInRevision(url, file, endRevision, clientManager)) {
-				System.out.println("Skipping non-existent file: " + file);
-				continue;
-			}
-
 			try {
-				// Check if the file has modifications
-				if (DiffGenerator.isDiffEmpty(url, file, startRevision, endRevision, clientManager)) {
+				if (!SVNUtilities.isBinaryFile(file) && DiffGenerator.isDiffEmpty(url, file, startRevision, endRevision, clientManager)) {
 					System.out.println("Skipping unmodified file: " + file);
 					continue;
 				}
@@ -43,10 +37,9 @@ public class FileExporter {
 
 				updateClient.doExport(fileUrl, exportFile, SVNRevision.create(endRevision),
 						SVNRevision.create(endRevision), null, true, SVNDepth.FILES);
-//                System.out.println("Exported: " + file);
 
 			} catch (SVNException e) {
-				e.printStackTrace();
+				System.err.println(e.getMessage());
 			}
 		}
 	}

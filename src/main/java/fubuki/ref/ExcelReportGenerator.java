@@ -76,7 +76,7 @@ public class ExcelReportGenerator {
         for (ModifiedFileEntry modifiedFileEntry : modifiedFiles) {
             SVNLogEntryPath entry = modifiedFileEntry.getEntryPath();
 
-            if (DiffGenerator.isDiffEmpty(url, entry.getPath(), startRevision, endRevision, clientManager)) {
+            if (!SVNUtilities.isBinaryFile(entry.getPath()) && DiffGenerator.isDiffEmpty(url, entry.getPath(), startRevision, endRevision, clientManager)) {
 				System.out.println("Skipping unmodified file: " + entry.getPath());
 				continue;
 			}

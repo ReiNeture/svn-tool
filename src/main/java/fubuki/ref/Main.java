@@ -13,8 +13,8 @@ public class Main {
 
     public static void main(String[] args) {
         final String repoUrl = "http://192.168.18.207:8085/svn/TBB_edge";  // your svn repo URL
-        final long startRevision = 346;
-        final long endRevision = 352;
+        final long startRevision = 327;
+        final long endRevision = 330;
         final String outputDir = "./svn_diffs";
         final String exportDir = "./svn_source";
         final String reportPath = "./svn_report.xlsx";
