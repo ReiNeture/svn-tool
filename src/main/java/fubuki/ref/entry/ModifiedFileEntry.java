@@ -1,8 +1,9 @@
 package fubuki.ref.entry;
 
-import org.tmatesoft.svn.core.SVNLogEntryPath;
-
 import java.util.Date;
+import java.util.Objects;
+
+import org.tmatesoft.svn.core.SVNLogEntryPath;
 
 public class ModifiedFileEntry {
     private final SVNLogEntryPath entryPath;
@@ -28,14 +29,11 @@ public class ModifiedFileEntry {
 
         ModifiedFileEntry that = (ModifiedFileEntry) o;
 
-        if (!entryPath.getPath().equals(that.entryPath.getPath())) return false;
-        return entryPath.getType() == that.entryPath.getType();
+        return Objects.equals(entryPath.getPath(), that.entryPath.getPath());
     }
 
     @Override
     public int hashCode() {
-        int result = entryPath.getPath().hashCode();
-        result = 31 * result + (int) entryPath.getType();
-        return result;
+        return Objects.hash(entryPath.getPath());
     }
 }
