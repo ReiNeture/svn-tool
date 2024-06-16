@@ -26,10 +26,10 @@ public class FileExporter {
 		for (String file : modifiedFiles) {
 
 			try {
-				if (!SVNUtilities.isBinaryFile(file) && DiffGenerator.isDiffEmpty(url, file, startRevision, endRevision, clientManager)) {
-					System.out.println("Skipping unmodified file: " + file);
-					continue;
-				}
+//				if (!SVNUtilities.isBinaryFile(file) && DiffGenerator.isDiffEmpty(url, file, startRevision, endRevision, clientManager)) {
+//					System.out.println("Skipping unmodified file: " + file);
+//					continue;
+//				}
 
 				SVNURL fileUrl = url.appendPath(file, false);
 				File exportFile = new File(exportDir, file);

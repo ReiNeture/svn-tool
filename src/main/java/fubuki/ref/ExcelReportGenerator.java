@@ -76,10 +76,10 @@ public class ExcelReportGenerator {
         for (ModifiedFileEntry modifiedFileEntry : modifiedFiles) {
             SVNLogEntryPath entry = modifiedFileEntry.getEntryPath();
 
-            if (!SVNUtilities.isBinaryFile(entry.getPath()) && DiffGenerator.isDiffEmpty(url, entry.getPath(), startRevision, endRevision, clientManager)) {
-				System.out.println("Skipping unmodified file: " + entry.getPath());
-				continue;
-			}
+//            if (!SVNUtilities.isBinaryFile(entry.getPath()) && DiffGenerator.isDiffEmpty(url, entry.getPath(), startRevision, endRevision, clientManager)) {
+//				System.out.println("Skipping unmodified file: " + entry.getPath());
+//				continue;
+//			}
             
             Row row = sheet.createRow(rowNum++);
             row.createCell(0).setCellValue(entry.getPath().substring(entry.getPath().lastIndexOf('/') + 1)); // 檔案名稱

@@ -49,13 +49,13 @@ public class DiffGenerator {
             }
             
 	        if (diffFile.length() == 0) {
-	            System.out.println("Deleting empty diff file: " + diffFile.getPath());
-	            diffFile.delete();
-	                
-	            if(preserveFileStructure) {
-	                File parentDir = diffFile.getParentFile();
-	                deleteEmptyDirs(parentDir, new File(outputDir));
-	            }
+//	            System.out.println("Deleting empty diff file: " + diffFile.getPath());
+//	            diffFile.delete();
+//	                
+//	            if(preserveFileStructure) {
+//	                File parentDir = diffFile.getParentFile();
+//	                deleteEmptyDirs(parentDir, new File(outputDir));
+//	            }
             }
         }
     }
