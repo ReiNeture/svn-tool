@@ -40,7 +40,6 @@ public class ExcelReportGenerator {
         contentFont.setFontName("Verdana");
         contentFont.setFontHeightInPoints((short) 10);
 
-
         // 設定樣式
         CellStyle headerCellStyle = workbook.createCellStyle();
         headerCellStyle.setFont(headerFont);
@@ -57,6 +56,18 @@ public class ExcelReportGenerator {
         contentCellStyle.setAlignment(HorizontalAlignment.LEFT);
         contentCellStyle.setFillForegroundColor(new XSSFColor(new byte[] {(byte) 182, (byte) 221, (byte) 232})); // 背景顏色 182 221 232
         contentCellStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+        
+        CellStyle addedCellStyle = workbook.createCellStyle();
+        addedCellStyle.setFont(contentFont);
+        addedCellStyle.setAlignment(HorizontalAlignment.LEFT);
+        addedCellStyle.setFillForegroundColor(new XSSFColor(new byte[] {(byte) 181, (byte) 230, (byte) 162})); // 新增 顏色 181 230 162
+        addedCellStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+
+        CellStyle deletedCellStyle = workbook.createCellStyle();
+        deletedCellStyle.setFont(contentFont);
+        deletedCellStyle.setAlignment(HorizontalAlignment.LEFT);
+        deletedCellStyle.setFillForegroundColor(new XSSFColor(new byte[] {(byte) 166, (byte) 71, (byte) 71})); // 刪除 顏色 166 71 71
+        deletedCellStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
         
         // 創建表頭
         String[] headers = {"影響的輸出物件", "序號", "儲存路徑", "操作類型", "修改日期：時間", "程式大小（位元組）", "版本 - [SVN]", "版本 - [Edit History]"};
@@ -86,16 +97,21 @@ public class ExcelReportGenerator {
             row.createCell(1).setCellValue(index++); // 序號
             row.createCell(2).setCellValue(entry.getPath().substring(0, entry.getPath().lastIndexOf('/'))); // 儲存路徑
             row.createCell(3).setCellValue(getTypeDescription(entry.getType())); // 操作類型
-            Cell dateCell = row.createCell(4);
-            dateCell.setCellValue(sdf.format(modifiedFileEntry.getCommitDate())); // 修改日期：時間
-            dateCell.setCellStyle(contentCellStyle);           
+            row.createCell(4).setCellValue(sdf.format(modifiedFileEntry.getCommitDate())); // 修改日期：時間
             row.createCell(5).setCellValue(entry.getType() == 'D' ? 0 : getFileSize(sourceDir, entry.getPath())); // 程式大小
             row.createCell(6).setCellValue(startRevision); // 版本 - [SVN]
             row.createCell(7).setCellValue(endRevision); // 版本 - [Edit History]
             
-            // 設置內容行的樣式
+            // 根據操作類型設置行的樣式
+            CellStyle rowStyle = contentCellStyle; // 默認樣式
+            if (entry.getType() == SVNLogEntryPath.TYPE_ADDED) {
+                rowStyle = addedCellStyle;
+            } else if (entry.getType() == SVNLogEntryPath.TYPE_DELETED) {
+                rowStyle = deletedCellStyle;
+            }
+            
             for (int i = 0; i < headers.length; i++) {
-                row.getCell(i).setCellStyle(contentCellStyle);
+                row.getCell(i).setCellStyle(rowStyle);
             }
         }
 
