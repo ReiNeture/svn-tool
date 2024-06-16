@@ -1,5 +1,5 @@
 .settings/
-.project
 target/
 svn_diffs/
 svn_source/
+svn_report.xlsx

@@ -8,6 +8,7 @@ import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -21,15 +22,17 @@ import org.tmatesoft.svn.core.wc.SVNLogClient;
 import org.tmatesoft.svn.core.wc.SVNRevision;
 import org.tmatesoft.svn.core.wc.SVNWCClient;
 
+import fubuki.ref.entry.ModifiedFileEntry;
+
 public class SVNUtilities {
 
 	private static final Set<String> BINARY_EXTENSIONS = new HashSet<>(Arrays.asList(
 	        "gif", "jpg", "jpeg", "png", "bmp", "tiff", "ico", "mp3", "wav", "ogg",
 	        "avi", "mp4", "mov", "mkv", "wmv", "flv", "pdf", "doc", "docx", "xls",
-	        "xlsx", "ppt", "pptx", "exe", "dll", "bin", "class", "jar", "rpt", "classpath"
+	        "xlsx", "ppt", "pptx", "exe", "dll", "bin", "class", "jar", "rpt"
 	    ));
 	
-    public static Set<String> getModifiedFiles(SVNURL url, long startRevision, long endRevision, SVNClientManager clientManager) throws SVNException {
+    public static Set<String> getModifiedPaths(SVNURL url, long startRevision, long endRevision, SVNClientManager clientManager) throws SVNException {
         Set<String> modifiedFiles = new HashSet<>();
         SVNLogClient logClient = clientManager.getLogClient();
         logClient.doLog(url, new String[]{""}, SVNRevision.UNDEFINED, SVNRevision.create(startRevision + 1),
@@ -42,6 +45,20 @@ public class SVNUtilities {
         return modifiedFiles;
     }
 
+    public static Set<ModifiedFileEntry> getModifiedFiles(SVNURL url, long startRevision, long endRevision, SVNClientManager clientManager) throws SVNException {
+        Set<ModifiedFileEntry> modifiedFiles = new LinkedHashSet<>();
+        SVNLogClient logClient = clientManager.getLogClient();
+        logClient.doLog(url, new String[]{""}, SVNRevision.UNDEFINED, SVNRevision.create(startRevision + 1),
+                SVNRevision.create(endRevision), true, true, 0,
+                logEntry -> modifiedFiles.addAll(
+                        logEntry.getChangedPaths().values().stream()
+                                .filter(entryPath -> entryPath.getKind() == SVNNodeKind.FILE)
+                                .map(entryPath -> new ModifiedFileEntry(entryPath, logEntry.getDate()))
+                                .collect(Collectors.toSet())));
+
+        return modifiedFiles;
+    }
+    
     public static boolean fileExistsInRevision(SVNURL url, String filePath, long revision, SVNClientManager clientManager) {
         SVNWCClient wcClient = clientManager.getWCClient();
         try {
@@ -104,4 +121,5 @@ public class SVNUtilities {
         String extension = getFileExtension(filePath).toLowerCase();
         return BINARY_EXTENSIONS.contains(extension);
     }
+    
 }
