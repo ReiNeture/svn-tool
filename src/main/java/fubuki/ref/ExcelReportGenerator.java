@@ -55,7 +55,7 @@ public class ExcelReportGenerator {
         headerCellStyle.setBorderRight(BorderStyle.THIN);
         
         // 創建表頭
-        String[] headers = {"影響的輸出物件", "序號", "儲存路徑", "操作類型", "修改日期：時間", "程式大小（位元組）", "版本 - [SVN]", "版本 - [Edit History]"};
+        String[] headers = {"影響的輸出物件", "序號", "儲存路徑", "操作類型", "修改日期：時間", "程式大小（位元組）", "比較版本 - [SVN]", "修改版本 - [SVN]", "備註"};
         Row headerRow = sheet.createRow(0);
         for (int i = 0; i < headers.length; i++) {
             Cell cell = headerRow.createCell(i);
@@ -82,6 +82,7 @@ public class ExcelReportGenerator {
             row.createCell(5).setCellValue(entry.getType() == 'D' ? 0 : getFileSize(sourceDir, entry.getPath())); // 程式大小
             row.createCell(6).setCellValue(startRevision); // 版本 - [SVN]
             row.createCell(7).setCellValue(endRevision); // 版本 - [Edit History]
+            row.createCell(8).setCellValue("");
             
             // 根據操作類型設置行的樣式
             CellStyle rowStyle = styleFactory.getContentCellStyle(); // 默認樣式
