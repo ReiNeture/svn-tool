@@ -139,14 +139,26 @@ public class ExcelReportGenerator {
         char firstType = operations.get(0);
         char lastType = operations.get(operations.size() - 1);
 
-        if (firstType == SVNLogEntryPath.TYPE_ADDED && lastType == SVNLogEntryPath.TYPE_MODIFIED) {
+        if (firstType == SVNLogEntryPath.TYPE_ADDED && lastType == SVNLogEntryPath.TYPE_DELETED) {
+            return "未知";
+        } else if (firstType == SVNLogEntryPath.TYPE_ADDED && lastType == SVNLogEntryPath.TYPE_MODIFIED) {
             return "新增";
+        } else if (firstType == SVNLogEntryPath.TYPE_ADDED && lastType == SVNLogEntryPath.TYPE_ADDED) {
+            return "新增";
+        } else if (firstType == SVNLogEntryPath.TYPE_MODIFIED && lastType == SVNLogEntryPath.TYPE_DELETED) {
+            return "刪除";
+        } else if (firstType == SVNLogEntryPath.TYPE_MODIFIED && lastType == SVNLogEntryPath.TYPE_MODIFIED) {
+            return "修改";
+        } else if (firstType == SVNLogEntryPath.TYPE_MODIFIED && lastType == SVNLogEntryPath.TYPE_ADDED) {
+            return "修改";
+        } else if (firstType == SVNLogEntryPath.TYPE_DELETED && lastType == SVNLogEntryPath.TYPE_DELETED) {
+            return "刪除";
         } else if (firstType == SVNLogEntryPath.TYPE_DELETED && lastType == SVNLogEntryPath.TYPE_MODIFIED) {
             return "修改";
-        } else if (firstType == SVNLogEntryPath.TYPE_ADDED && lastType == SVNLogEntryPath.TYPE_DELETED) {
-            return "未知";
+        } else if (firstType == SVNLogEntryPath.TYPE_DELETED && lastType == SVNLogEntryPath.TYPE_ADDED) {
+            return "修改";
         } else {
-            return getTypeDescription(lastType);
+            return getTypeDescription(firstType);
         }
     }
 }
