@@ -26,14 +26,9 @@ public class FileExporter {
 		for (String file : modifiedFiles) {
 
 			try {
-//				if (!SVNUtilities.isBinaryFile(file) && DiffGenerator.isDiffEmpty(url, file, startRevision, endRevision, clientManager)) {
-//					System.out.println("Skipping unmodified file: " + file);
-//					continue;
-//				}
-
 				SVNURL fileUrl = url.appendPath(file, false);
 				File exportFile = new File(exportDir, file);
-				createParentDirs(exportFile);
+//				createParentDirs(exportFile);
 
 				updateClient.doExport(fileUrl, exportFile, SVNRevision.create(endRevision),
 						SVNRevision.create(endRevision), null, true, SVNDepth.FILES);
@@ -44,6 +39,7 @@ public class FileExporter {
 		}
 	}
 
+	@SuppressWarnings("unused")
 	private void createParentDirs(File file) {
 		File parentDir = file.getParentFile();
 		if (!parentDir.exists()) {

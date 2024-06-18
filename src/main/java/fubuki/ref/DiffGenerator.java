@@ -90,7 +90,8 @@ public class DiffGenerator {
         }
     }
     
-    private static void deleteEmptyDirs(File dir, File outputDir) {
+    @SuppressWarnings("unused")
+	private static void deleteEmptyDirs(File dir, File outputDir) {
         if (dir.isDirectory() && dir.list().length == 0 
         		&& !dir.equals(outputDir) ) {
         	

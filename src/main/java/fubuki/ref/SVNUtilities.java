@@ -56,10 +56,10 @@ public class SVNUtilities {
                         .forEach(entryPath -> {
                             ModifiedFileEntry entry = modifiedFilesMap.get(entryPath.getPath());
                             if (entry == null) {
-                                entry = new ModifiedFileEntry(entryPath, logEntry.getDate());
+                                entry = new ModifiedFileEntry(entryPath, logEntry.getDate(), logEntry.getRevision());
                                 modifiedFilesMap.put(entryPath.getPath(), entry);
                             } else {
-                                entry.addOperation(entryPath.getType());
+                                entry.addOperation(entryPath.getType(), logEntry.getRevision());
                             }
                         }));
 

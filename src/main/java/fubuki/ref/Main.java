@@ -13,13 +13,13 @@ import fubuki.ref.entry.ModifiedFileEntry;
 public class Main {
 
     public static void main(String[] args) {
-        final String repoUrl = "http://192.168.18.207:8085/svn/TBB_edge";  // your svn repo URL
-        final long startRevision = 542;
-        final long endRevision = 543;
+        final String repoUrl = "https://127.0.0.1/svn/yuuki";  // your svn repo URL
+        final long startRevision = 14;
+        final long endRevision = 17;
         final String outputDir = "./svn_diffs";
         final String exportDir = "./svn_source";
         final String reportPath = "./svn_report.xlsx";
-        final boolean preserveFileStructure = true; // diff need to create directory structure for files?
+        final boolean preserveFileStructure = false; // diff need to create directory structure for files?
 
         try {
             SVNURL url = SVNURL.parseURIEncoded(repoUrl);
