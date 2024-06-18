@@ -1,6 +1,7 @@
 package fubuki.ref;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Set;
 
 import org.tmatesoft.svn.core.SVNException;
@@ -13,8 +14,8 @@ public class Main {
 
     public static void main(String[] args) {
         final String repoUrl = "http://192.168.18.207:8085/svn/TBB_edge";  // your svn repo URL
-        final long startRevision = 327;
-        final long endRevision = 330;
+        final long startRevision = 542;
+        final long endRevision = 543;
         final String outputDir = "./svn_diffs";
         final String exportDir = "./svn_source";
         final String reportPath = "./svn_report.xlsx";
@@ -34,7 +35,7 @@ public class Main {
             fileExporter.exportFiles(url, modifiedPaths, startRevision, endRevision, exportDir);
             System.out.println("Source Export completed.");
             
-            Set<ModifiedFileEntry> modifiedFiles = SVNUtilities.getModifiedFiles(url, startRevision, endRevision, clientManager);
+            List<ModifiedFileEntry> modifiedFiles = SVNUtilities.getModifiedFiles(url, startRevision, endRevision, clientManager);
             ExcelReportGenerator reportGenerator = new ExcelReportGenerator();
             reportGenerator.generateReport(modifiedFiles, reportPath, startRevision, endRevision, exportDir, url, clientManager);
             System.out.println("Excel report generated.");

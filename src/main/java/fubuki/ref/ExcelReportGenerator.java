@@ -4,7 +4,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
-import java.util.Set;
+import java.util.List;
 
 import org.apache.poi.ss.usermodel.BorderStyle;
 import org.apache.poi.ss.usermodel.Cell;
@@ -22,25 +22,28 @@ import org.tmatesoft.svn.core.SVNLogEntryPath;
 import org.tmatesoft.svn.core.SVNURL;
 import org.tmatesoft.svn.core.wc.SVNClientManager;
 
+import fubuki.ref.cellstyle.CellStyleFactory;
 import fubuki.ref.entry.ModifiedFileEntry;
 
 public class ExcelReportGenerator {
 
-    public void generateReport(Set<ModifiedFileEntry> modifiedFiles, String outputFilePath, long startRevision, long endRevision, String sourceDir, SVNURL url, SVNClientManager clientManager) throws IOException, SVNException {
-        Workbook workbook = new XSSFWorkbook();
+    private final CellStyleFactory styleFactory;
+    private final Workbook workbook;
+
+    public ExcelReportGenerator() {
+        this.workbook = new XSSFWorkbook();
+        this.styleFactory = new CellStyleFactory(workbook);
+    }
+	
+    public void generateReport(List<ModifiedFileEntry> modifiedFiles, String outputFilePath, long startRevision, long endRevision, String sourceDir, SVNURL url, SVNClientManager clientManager) throws IOException, SVNException {
         Sheet sheet = workbook.createSheet("SVN Changes");
 
-        // 設定字體
+        // 設定字體和表頭樣式
         Font headerFont = workbook.createFont();
         headerFont.setFontName("新細明體");
         headerFont.setFontHeightInPoints((short) 10);
         headerFont.setBold(true);
 
-        Font contentFont = workbook.createFont();
-        contentFont.setFontName("Verdana");
-        contentFont.setFontHeightInPoints((short) 10);
-
-        // 設定樣式
         CellStyle headerCellStyle = workbook.createCellStyle();
         headerCellStyle.setFont(headerFont);
         headerCellStyle.setAlignment(HorizontalAlignment.CENTER);
@@ -50,24 +53,6 @@ public class ExcelReportGenerator {
         headerCellStyle.setBorderBottom(BorderStyle.THIN);
         headerCellStyle.setBorderLeft(BorderStyle.THIN);
         headerCellStyle.setBorderRight(BorderStyle.THIN);
-
-        CellStyle contentCellStyle = workbook.createCellStyle();
-        contentCellStyle.setFont(contentFont);
-        contentCellStyle.setAlignment(HorizontalAlignment.LEFT);
-        contentCellStyle.setFillForegroundColor(new XSSFColor(new byte[] {(byte) 182, (byte) 221, (byte) 232})); // 背景顏色 182 221 232
-        contentCellStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
-        
-        CellStyle addedCellStyle = workbook.createCellStyle();
-        addedCellStyle.setFont(contentFont);
-        addedCellStyle.setAlignment(HorizontalAlignment.LEFT);
-        addedCellStyle.setFillForegroundColor(new XSSFColor(new byte[] {(byte) 181, (byte) 230, (byte) 162})); // 新增 顏色 181 230 162
-        addedCellStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
-
-        CellStyle deletedCellStyle = workbook.createCellStyle();
-        deletedCellStyle.setFont(contentFont);
-        deletedCellStyle.setAlignment(HorizontalAlignment.LEFT);
-        deletedCellStyle.setFillForegroundColor(new XSSFColor(new byte[] {(byte) 166, (byte) 71, (byte) 71})); // 刪除 顏色 166 71 71
-        deletedCellStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
         
         // 創建表頭
         String[] headers = {"影響的輸出物件", "序號", "儲存路徑", "操作類型", "修改日期：時間", "程式大小（位元組）", "版本 - [SVN]", "版本 - [Edit History]"};
@@ -86,28 +71,26 @@ public class ExcelReportGenerator {
         int index = 1;
         for (ModifiedFileEntry modifiedFileEntry : modifiedFiles) {
             SVNLogEntryPath entry = modifiedFileEntry.getEntryPath();
+            String realModificationType = determineRealModificationType(modifiedFileEntry.getOperations());
 
-//            if (!SVNUtilities.isBinaryFile(entry.getPath()) && DiffGenerator.isDiffEmpty(url, entry.getPath(), startRevision, endRevision, clientManager)) {
-//				System.out.println("Skipping unmodified file: " + entry.getPath());
-//				continue;
-//			}
-            
             Row row = sheet.createRow(rowNum++);
             row.createCell(0).setCellValue(entry.getPath().substring(entry.getPath().lastIndexOf('/') + 1)); // 檔案名稱
             row.createCell(1).setCellValue(index++); // 序號
             row.createCell(2).setCellValue(entry.getPath().substring(0, entry.getPath().lastIndexOf('/'))); // 儲存路徑
-            row.createCell(3).setCellValue(getTypeDescription(entry.getType())); // 操作類型
+            row.createCell(3).setCellValue(realModificationType); // 操作類型
             row.createCell(4).setCellValue(sdf.format(modifiedFileEntry.getCommitDate())); // 修改日期：時間
             row.createCell(5).setCellValue(entry.getType() == 'D' ? 0 : getFileSize(sourceDir, entry.getPath())); // 程式大小
             row.createCell(6).setCellValue(startRevision); // 版本 - [SVN]
             row.createCell(7).setCellValue(endRevision); // 版本 - [Edit History]
             
             // 根據操作類型設置行的樣式
-            CellStyle rowStyle = contentCellStyle; // 默認樣式
-            if (entry.getType() == SVNLogEntryPath.TYPE_ADDED) {
-                rowStyle = addedCellStyle;
-            } else if (entry.getType() == SVNLogEntryPath.TYPE_DELETED) {
-                rowStyle = deletedCellStyle;
+            CellStyle rowStyle = styleFactory.getContentCellStyle(); // 默認樣式
+            if (realModificationType.equals("新增")) {
+                rowStyle = styleFactory.getAddedCellStyle();
+            } else if (realModificationType.equals("刪除")) {
+                rowStyle = styleFactory.getDeletedCellStyle();
+            } else if (realModificationType.equals("未知")) {
+            	rowStyle = styleFactory.getUnknownCellStyle();
             }
             
             for (int i = 0; i < headers.length; i++) {
@@ -149,6 +132,21 @@ public class ExcelReportGenerator {
                 return "取代";
             default:
                 return "未知";
+        }
+    }
+    
+    private String determineRealModificationType(List<Character> operations) {
+        char firstType = operations.get(0);
+        char lastType = operations.get(operations.size() - 1);
+
+        if (firstType == SVNLogEntryPath.TYPE_ADDED && lastType == SVNLogEntryPath.TYPE_MODIFIED) {
+            return "新增";
+        } else if (firstType == SVNLogEntryPath.TYPE_DELETED && lastType == SVNLogEntryPath.TYPE_MODIFIED) {
+            return "修改";
+        } else if (firstType == SVNLogEntryPath.TYPE_ADDED && lastType == SVNLogEntryPath.TYPE_DELETED) {
+            return "未知";
+        } else {
+            return getTypeDescription(lastType);
         }
     }
 }

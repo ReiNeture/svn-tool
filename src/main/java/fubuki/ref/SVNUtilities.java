@@ -5,9 +5,11 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -44,18 +46,24 @@ public class SVNUtilities {
         return modifiedFiles;
     }
 
-    public static Set<ModifiedFileEntry> getModifiedFiles(SVNURL url, long startRevision, long endRevision, SVNClientManager clientManager) throws SVNException {
-        Set<ModifiedFileEntry> modifiedFiles = new HashSet<>();
+    public static List<ModifiedFileEntry> getModifiedFiles(SVNURL url, long startRevision, long endRevision, SVNClientManager clientManager) throws SVNException {
+        Map<String, ModifiedFileEntry> modifiedFilesMap = new HashMap<>();
         SVNLogClient logClient = clientManager.getLogClient();
         logClient.doLog(url, new String[]{""}, SVNRevision.UNDEFINED, SVNRevision.create(startRevision + 1),
                 SVNRevision.create(endRevision), true, true, 0,
-                logEntry -> modifiedFiles.addAll(
-                        logEntry.getChangedPaths().values().stream()
-                                .filter(entryPath -> entryPath.getKind() == SVNNodeKind.FILE)
-                                .map(entryPath -> new ModifiedFileEntry(entryPath, logEntry.getDate()))
-                                .collect(Collectors.toList())));
+                logEntry -> logEntry.getChangedPaths().values().stream()
+                        .filter(entryPath -> entryPath.getKind() == SVNNodeKind.FILE)
+                        .forEach(entryPath -> {
+                            ModifiedFileEntry entry = modifiedFilesMap.get(entryPath.getPath());
+                            if (entry == null) {
+                                entry = new ModifiedFileEntry(entryPath, logEntry.getDate());
+                                modifiedFilesMap.put(entryPath.getPath(), entry);
+                            } else {
+                                entry.addOperation(entryPath.getType());
+                            }
+                        }));
 
-        return modifiedFiles;
+        return new ArrayList<>(modifiedFilesMap.values());
     }
     
     public static boolean fileExistsInRevision(SVNURL url, String filePath, long revision, SVNClientManager clientManager) {
