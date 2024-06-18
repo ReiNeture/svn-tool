@@ -81,7 +81,7 @@ public class ExcelReportGenerator {
             row.createCell(4).setCellValue(sdf.format(modifiedFileEntry.getCommitDate())); // 修改日期：時間
             row.createCell(5).setCellValue(entry.getType() == 'D' ? 0 : getFileSize(sourceDir, entry.getPath())); // 程式大小
             row.createCell(6).setCellValue(startRevision); // 版本 - [SVN]
-            row.createCell(7).setCellValue(endRevision); // 版本 - [Edit History]
+            row.createCell(7).setCellValue(modifiedFileEntry.getLastCommitRevision()); // 版本 - [Edit History]
             row.createCell(8).setCellValue("");
             
             // 根據操作類型設置行的樣式
