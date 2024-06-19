@@ -4,14 +4,17 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.tmatesoft.svn.core.SVNDepth;
 import org.tmatesoft.svn.core.SVNURL;
 import org.tmatesoft.svn.core.wc.SVNClientManager;
 import org.tmatesoft.svn.core.wc.SVNDiffClient;
 import org.tmatesoft.svn.core.wc.SVNRevision;
+
+import fubuki.ref.entry.ModifiedFileEntry;
 
 public class DiffGenerator {
 
@@ -23,15 +26,19 @@ public class DiffGenerator {
         this.diffClient = clientManager.getDiffClient();
     }
 
-    public void generateDiffs(SVNURL url, Set<String> modifiedFiles, long startRevision, long endRevision, String outputDir, boolean preserveFileStructure) {
+    public void generateDiffs(SVNURL url, List<ModifiedFileEntry> modifiedFiles, long startRevision, long endRevision, String outputDir, boolean preserveFileStructure) {
         Map<String, Integer> fileNameCount = SVNUtilities.getFileNameCount(modifiedFiles);
 
         SVNUtilities.cleanDirectory(outputDir);
         
-        for (String file : modifiedFiles) {
+        Iterator<ModifiedFileEntry> iterator = modifiedFiles.iterator();
+        
+        while (iterator.hasNext()) {
+            ModifiedFileEntry fileEntry = iterator.next();
+            String file = fileEntry.getEntryPath().getPath();
         	
         	if (SVNUtilities.isBinaryFile(file)) {
-                System.out.println("Skipping binary file: " + file);
+                System.out.println("跳過非文字檔: " + file);
                 continue;
             }
         	
@@ -49,13 +56,14 @@ public class DiffGenerator {
             }
             
 	        if (diffFile.length() == 0) {
-//	            System.out.println("Deleting empty diff file: " + diffFile.getPath());
-//	            diffFile.delete();
-//	                
-//	            if(preserveFileStructure) {
-//	                File parentDir = diffFile.getParentFile();
-//	                deleteEmptyDirs(parentDir, new File(outputDir));
-//	            }
+	            System.out.println("已從檔案列表移除未異動檔案: " + diffFile.getPath());
+	            diffFile.delete();
+	            iterator.remove();  // 從 modifiedFiles 集合中移除無異動的檔案
+	            
+	            if(preserveFileStructure) {
+	                File parentDir = diffFile.getParentFile();
+	                deleteEmptyDirs(parentDir, new File(outputDir));
+	            }
             }
         }
     }
@@ -90,12 +98,11 @@ public class DiffGenerator {
         }
     }
     
-    @SuppressWarnings("unused")
 	private static void deleteEmptyDirs(File dir, File outputDir) {
         if (dir.isDirectory() && dir.list().length == 0 
         		&& !dir.equals(outputDir) ) {
         	
-            System.out.println("Deleting empty directory: " + dir.getPath());
+            System.out.println("移除空資料夾: " + dir.getPath());
             dir.delete();
             deleteEmptyDirs(dir.getParentFile(), outputDir);
         }

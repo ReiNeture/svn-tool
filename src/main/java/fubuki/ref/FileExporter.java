@@ -1,14 +1,16 @@
 package fubuki.ref;
 
+import java.io.File;
+import java.util.List;
+
 import org.tmatesoft.svn.core.SVNDepth;
 import org.tmatesoft.svn.core.SVNException;
 import org.tmatesoft.svn.core.SVNURL;
 import org.tmatesoft.svn.core.wc.SVNClientManager;
-import org.tmatesoft.svn.core.wc.SVNUpdateClient;
 import org.tmatesoft.svn.core.wc.SVNRevision;
+import org.tmatesoft.svn.core.wc.SVNUpdateClient;
 
-import java.io.File;
-import java.util.Set;
+import fubuki.ref.entry.ModifiedFileEntry;
 
 public class FileExporter {
 
@@ -18,12 +20,14 @@ public class FileExporter {
 		this.clientManager = clientManager;
 	}
 
-	public void exportFiles(SVNURL url, Set<String> modifiedFiles, long startRevision, long endRevision, String exportDir) {
+	public void exportFiles(SVNURL url, List<ModifiedFileEntry> modifiedFiles, long startRevision, long endRevision, String exportDir) {
 		
 		SVNUpdateClient updateClient = clientManager.getUpdateClient();
 
 		SVNUtilities.cleanDirectory(exportDir);
-		for (String file : modifiedFiles) {
+		
+        for (ModifiedFileEntry fileEntry : modifiedFiles) {
+            String file = fileEntry.getEntryPath().getPath();
 
 			try {
 				SVNURL fileUrl = url.appendPath(file, false);

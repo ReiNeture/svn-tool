@@ -95,6 +95,17 @@ public class SVNUtilities {
         return fileNameCount;
     }
     
+    public static Map<String, Integer> getFileNameCount(List<ModifiedFileEntry> modifiedFiles) {
+        Map<String, Integer> fileNameCount = new HashMap<>();
+        for (ModifiedFileEntry enrty : modifiedFiles) {
+        	String file = enrty.getEntryPath().getPath();
+            String fileName = new File(file).getName();
+            
+            fileNameCount.put(fileName, fileNameCount.getOrDefault(fileName, 0) + 1);
+        }
+        return fileNameCount;
+    }
+    
     public static void cleanDirectory(String directoryPath) {
         Path directory = Paths.get(directoryPath);
         try {
