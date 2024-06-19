@@ -56,7 +56,7 @@ public class DiffGenerator {
             }
             
 	        if (diffFile.length() == 0) {
-	            System.out.println("已從檔案列表移除未異動檔案: " + diffFile.getPath());
+	            System.err.println("已從清單中排除: " + diffFile.getPath());
 	            diffFile.delete();
 	            iterator.remove();  // 從 modifiedFiles 集合中移除無異動的檔案
 	            
