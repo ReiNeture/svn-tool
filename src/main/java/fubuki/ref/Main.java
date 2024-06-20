@@ -13,18 +13,20 @@ public class Main {
 
     public static void main(String[] args) {
         final String repoUrl = "https://127.0.0.1/svn/yuuki";  // your svn repo URL
-        final long startRevision = 572;
-        final long endRevision = 578;
-        final String revisionRange = "100-103;110-114;120;121";
+        final String revisionRange = "535-537;581";
         final String outputDir = "./svn_diffs";
         final String exportDir = "./svn_source";
         final String reportPath = "./svn_report.xlsx";
         final boolean preserveFileStructure = false; // diff need to create directory structure for files?
 
+        List<Long> revisions = SVNUtilities.parseRevisions(revisionRange);
+        final long startRevision = revisions.get(0) - 1;
+        final long endRevision = revisions.get(revisions.size() - 1);
+        
         try {
             SVNURL url = SVNURL.parseURIEncoded(repoUrl);
             SVNClientManager clientManager = SVNClientManager.newInstance();
-
+            
             List<ModifiedFileEntry> modifiedFiles = SVNUtilities.getModifiedFiles(url, revisionRange, clientManager);
             System.out.println("已取得版本異動清單 size=" + modifiedFiles.size());
             
@@ -33,12 +35,13 @@ public class Main {
             System.out.println("diff檔已產生完成 size=" + modifiedFiles.size());
             
             FileExporter fileExporter = new FileExporter(clientManager);
-            fileExporter.exportFiles(url, modifiedFiles, startRevision, endRevision, exportDir);
+            fileExporter.exportFiles(url, modifiedFiles, endRevision, exportDir);
             System.out.println("source已匯出完成 size=" + modifiedFiles.size());
             
             ExcelReportGenerator reportGenerator = new ExcelReportGenerator();
             reportGenerator.generateReport(modifiedFiles, reportPath, startRevision, endRevision, exportDir, url, clientManager);
             System.out.println("程式變更單已成功建立 size=" + modifiedFiles.size());
+            
             
         } catch (SVNException | IOException e) {
             e.printStackTrace();

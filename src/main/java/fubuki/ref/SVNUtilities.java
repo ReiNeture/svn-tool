@@ -49,6 +49,7 @@ public class SVNUtilities {
 
     public static List<ModifiedFileEntry> getModifiedFiles(SVNURL url, String revisionRange, SVNClientManager clientManager) throws SVNException {
     	List<Long> revisions = parseRevisions(revisionRange);
+    	Set<Long> revisionSet = new HashSet<>(revisions); // 使用 Set 以便快速查找
         Map<String, ModifiedFileEntry> modifiedFilesMap = new HashMap<>();
         SVNLogClient logClient = clientManager.getLogClient();
         
@@ -57,17 +58,18 @@ public class SVNUtilities {
         SVNRevision endRevision = SVNRevision.create(revisions.get(revisions.size() - 1));
         
         logClient.doLog(url, new String[]{""}, SVNRevision.UNDEFINED, startRevision, endRevision, true, true, 0,
-                logEntry -> logEntry.getChangedPaths().values().stream()
-                        .filter(entryPath -> entryPath.getKind() == SVNNodeKind.FILE)
-                        .forEach(entryPath -> {
-                            ModifiedFileEntry entry = modifiedFilesMap.get(entryPath.getPath());
-                            if (entry == null) {
-                                entry = new ModifiedFileEntry(entryPath, logEntry.getDate(), logEntry.getRevision());
-                                modifiedFilesMap.put(entryPath.getPath(), entry);
-                            } else {
+                logEntry -> {
+                    long logEntryRevision = logEntry.getRevision();
+                    if (revisionSet.contains(logEntryRevision)) {
+                        logEntry.getChangedPaths().values().stream()
+                            .filter(entryPath -> entryPath.getKind() == SVNNodeKind.FILE)
+                            .forEach(entryPath -> {
+                                ModifiedFileEntry entry = modifiedFilesMap.computeIfAbsent(entryPath.getPath(), 
+                                    k -> new ModifiedFileEntry(entryPath, logEntry.getDate(), logEntry.getRevision()));
                                 entry.addOperation(entryPath.getType(), logEntry.getRevision());
-                            }
-                        }));
+                            });
+                    }
+                });
 
         return new ArrayList<>(modifiedFilesMap.values());
     }

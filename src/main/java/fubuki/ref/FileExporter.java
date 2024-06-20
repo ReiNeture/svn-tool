@@ -20,7 +20,7 @@ public class FileExporter {
 		this.clientManager = clientManager;
 	}
 
-	public void exportFiles(SVNURL url, List<ModifiedFileEntry> modifiedFiles, long startRevision, long endRevision, String exportDir) {
+	public void exportFiles(SVNURL url, List<ModifiedFileEntry> modifiedFiles, long revision, String exportDir) {
 		
 		SVNUpdateClient updateClient = clientManager.getUpdateClient();
 
@@ -34,8 +34,8 @@ public class FileExporter {
 				File exportFile = new File(exportDir, file);
 //				createParentDirs(exportFile);
 
-				updateClient.doExport(fileUrl, exportFile, SVNRevision.create(endRevision),
-						SVNRevision.create(endRevision), null, true, SVNDepth.FILES);
+				updateClient.doExport(fileUrl, exportFile, SVNRevision.create(revision),
+						SVNRevision.create(revision), null, true, SVNDepth.FILES);
 
 			} catch (SVNException e) {
 				System.err.println(e.getMessage());
