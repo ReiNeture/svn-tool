@@ -12,6 +12,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.stream.Collectors;
 
 import org.tmatesoft.svn.core.SVNException;
@@ -140,4 +141,46 @@ public class SVNUtilities {
         return BINARY_EXTENSIONS.contains(extension);
     }
     
+    public static List<Long> parseRevisions(String revisionRange) {
+        Set<Long> revisions = new TreeSet<>();
+        String[] ranges = revisionRange.split(";");
+        
+        long lastRevision = Long.MIN_VALUE;
+        for (String range : ranges) {
+            if (range.contains("-")) {
+                String[] bounds = range.split("-");
+                long start = Long.parseLong(bounds[0]);
+                long end = Long.parseLong(bounds[1]);
+
+                // 檢查是否符合從小到大的規則
+                if (start > end)
+                    throw new IllegalArgumentException("Invalid revision range: " + range);
+                // 檢查輸入順序是否從小到大
+                if (start < lastRevision)
+                    throw new IllegalArgumentException("Revision range out of order: " + range);
+                
+                for (long i = start; i <= end; i++)
+                    revisions.add(i);
+
+                lastRevision = end;
+                
+            } else {
+                long revision = Long.parseLong(range);
+
+                // 檢查輸入順序是否從小到大
+                if (revision < lastRevision)
+                    throw new IllegalArgumentException("Revision range out of order: " + range);
+
+                revisions.add(revision);
+                lastRevision = revision;
+            }
+        }
+
+        return new ArrayList<>(revisions);
+    }
+    
+    public static void main(String[] args) {
+    	List<Long> a = parseRevisions("1;2;3;10;7;1-5");
+    	System.out.println(a);
+	}
 }

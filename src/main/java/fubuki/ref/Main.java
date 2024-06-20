@@ -15,6 +15,7 @@ public class Main {
         final String repoUrl = "https://127.0.0.1/svn/yuuki";  // your svn repo URL
         final long startRevision = 572;
         final long endRevision = 578;
+        final String revisionRange = "100-103;110-114;120;121";
         final String outputDir = "./svn_diffs";
         final String exportDir = "./svn_source";
         final String reportPath = "./svn_report.xlsx";
