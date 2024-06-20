@@ -47,11 +47,16 @@ public class SVNUtilities {
         return modifiedFiles;
     }
 
-    public static List<ModifiedFileEntry> getModifiedFiles(SVNURL url, long startRevision, long endRevision, SVNClientManager clientManager) throws SVNException {
+    public static List<ModifiedFileEntry> getModifiedFiles(SVNURL url, String revisionRange, SVNClientManager clientManager) throws SVNException {
+    	List<Long> revisions = parseRevisions(revisionRange);
         Map<String, ModifiedFileEntry> modifiedFilesMap = new HashMap<>();
         SVNLogClient logClient = clientManager.getLogClient();
-        logClient.doLog(url, new String[]{""}, SVNRevision.UNDEFINED, SVNRevision.create(startRevision + 1),
-                SVNRevision.create(endRevision), true, true, 0,
+        
+        // 設置一次性的版本區間查詢
+        SVNRevision startRevision = SVNRevision.create(revisions.get(0));
+        SVNRevision endRevision = SVNRevision.create(revisions.get(revisions.size() - 1));
+        
+        logClient.doLog(url, new String[]{""}, SVNRevision.UNDEFINED, startRevision, endRevision, true, true, 0,
                 logEntry -> logEntry.getChangedPaths().values().stream()
                         .filter(entryPath -> entryPath.getKind() == SVNNodeKind.FILE)
                         .forEach(entryPath -> {
@@ -179,8 +184,4 @@ public class SVNUtilities {
         return new ArrayList<>(revisions);
     }
     
-    public static void main(String[] args) {
-    	List<Long> a = parseRevisions("1;2;3;10;7;1-5");
-    	System.out.println(a);
-	}
 }

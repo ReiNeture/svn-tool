@@ -25,8 +25,7 @@ public class Main {
             SVNURL url = SVNURL.parseURIEncoded(repoUrl);
             SVNClientManager clientManager = SVNClientManager.newInstance();
 
-//            Set<String> modifiedPaths = SVNUtilities.getModifiedPaths(url, startRevision, endRevision, clientManager);
-            List<ModifiedFileEntry> modifiedFiles = SVNUtilities.getModifiedFiles(url, startRevision, endRevision, clientManager);
+            List<ModifiedFileEntry> modifiedFiles = SVNUtilities.getModifiedFiles(url, revisionRange, clientManager);
             System.out.println("已取得版本異動清單 size=" + modifiedFiles.size());
             
             DiffGenerator diffGenerator = new DiffGenerator(clientManager);
