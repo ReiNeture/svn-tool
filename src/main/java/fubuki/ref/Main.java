@@ -2,9 +2,13 @@ package fubuki.ref;
 
 import java.awt.Desktop;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.util.List;
 
+import org.apache.commons.io.output.TeeOutputStream;
 import org.tmatesoft.svn.core.SVNException;
 import org.tmatesoft.svn.core.SVNURL;
 import org.tmatesoft.svn.core.wc.SVNClientManager;
@@ -14,13 +18,19 @@ import fubuki.ref.entry.ModifiedFileEntry;
 public class Main {
 
     public static void main(String[] args) {
-        final String repoUrl = "https://127.0.0.1/svn/yuuki";  // your svn repo URL
-        final String revisionRange = "12-15";
+    	// SVN設定
+        final String repoUrl = "https://192.168.18.41/svn/YuukiKitsu/";  // your svn repo URL
+        final String revisionRange = "2-28";
+        // 輸出設定
         final String outputDir = "./export/svn_diffs";
         final String exportDir = "./export/svn_source";
         final String reportPath = "./export/svn_report.xlsx";
+        final String logPath = "./export/console.log";
         final boolean preserveFileStructure = false; // diff need to create directory structure for files?
 
+        
+        redirectOutput(logPath);
+        
         List<Long> revisions = SVNUtilities.parseRevisions(revisionRange);
         final long startRevision = revisions.get(0) - 1;
         final long endRevision = revisions.get(revisions.size() - 1);
@@ -48,6 +58,20 @@ public class Main {
             openParentDirInExplorer(outputDir);
             
         } catch (SVNException | IOException e) {
+            e.printStackTrace();
+        }
+    }
+    
+    private static void redirectOutput(String logPath) {
+        try {
+            PrintStream console = System.out;
+            PrintStream logStream = new PrintStream(new FileOutputStream(logPath));
+            TeeOutputStream teeOut = new TeeOutputStream(console, logStream);
+            TeeOutputStream teeErr = new TeeOutputStream(System.err, logStream);
+
+            System.setOut(new PrintStream(teeOut));
+            System.setErr(new PrintStream(teeErr));
+        } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
     }
