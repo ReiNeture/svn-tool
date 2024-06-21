@@ -1,5 +1,7 @@
 package fubuki.ref;
 
+import java.awt.Desktop;
+import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
@@ -13,10 +15,10 @@ public class Main {
 
     public static void main(String[] args) {
         final String repoUrl = "https://127.0.0.1/svn/yuuki";  // your svn repo URL
-        final String revisionRange = "535-537;581";
-        final String outputDir = "./svn_diffs";
-        final String exportDir = "./svn_source";
-        final String reportPath = "./svn_report.xlsx";
+        final String revisionRange = "12-15";
+        final String outputDir = "./export/svn_diffs";
+        final String exportDir = "./export/svn_source";
+        final String reportPath = "./export/svn_report.xlsx";
         final boolean preserveFileStructure = false; // diff need to create directory structure for files?
 
         List<Long> revisions = SVNUtilities.parseRevisions(revisionRange);
@@ -42,8 +44,27 @@ public class Main {
             reportGenerator.generateReport(modifiedFiles, reportPath, startRevision, endRevision, exportDir, url, clientManager);
             System.out.println("程式變更單已成功建立 size=" + modifiedFiles.size());
             
+            // 打開檔案總管
+            openParentDirInExplorer(outputDir);
             
         } catch (SVNException | IOException e) {
+            e.printStackTrace();
+        }
+    }
+    
+    private static void openParentDirInExplorer(String outputDir) {
+        try {
+            File dir = new File(outputDir).getAbsoluteFile().getParentFile();
+            if (dir == null || !dir.exists()) {
+                System.out.println("目錄不存在: " + dir);
+                return;
+            }
+            if (Desktop.isDesktopSupported()) {
+                Desktop.getDesktop().open(dir);
+            } else {
+                System.out.println("Desktop 不支援自動開啟檔案總管.");
+            }
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }

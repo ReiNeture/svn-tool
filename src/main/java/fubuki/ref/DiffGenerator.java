@@ -38,7 +38,7 @@ public class DiffGenerator {
             String file = fileEntry.getEntryPath().getPath();
         	
         	if (SVNUtilities.isBinaryFile(file)) {
-                System.out.println("跳過非文字檔: " + file);
+                System.out.println("diff跳過非文字檔: " + file);
                 continue;
             }
         	
@@ -53,18 +53,19 @@ public class DiffGenerator {
                 
             } catch (Exception e) {
             	System.err.println(e.getMessage());
+            	
+    	        if (diffFile.length() == 0) {
+    	            System.err.println("已從清單中排除: " + diffFile.getPath());
+    	            diffFile.delete();
+    	            iterator.remove();  // 從 modifiedFiles 集合中移除無異動的檔案
+    	            
+    	            if(preserveFileStructure) {
+    	                File parentDir = diffFile.getParentFile();
+    	                deleteEmptyDirs(parentDir, new File(outputDir));
+    	            }
+                }
             }
             
-	        if (diffFile.length() == 0) {
-	            System.err.println("已從清單中排除: " + diffFile.getPath());
-	            diffFile.delete();
-	            iterator.remove();  // 從 modifiedFiles 集合中移除無異動的檔案
-	            
-	            if(preserveFileStructure) {
-	                File parentDir = diffFile.getParentFile();
-	                deleteEmptyDirs(parentDir, new File(outputDir));
-	            }
-            }
         }
     }
 
