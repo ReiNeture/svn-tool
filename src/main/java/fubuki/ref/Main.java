@@ -19,20 +19,21 @@ public class Main {
 
     public static void main(String[] args) {
     	// SVN設定
-        final String repoUrl = "https://192.168.18.41/svn/YuukiKitsu/";  // your svn repo URL
-        final String revisionRange = "2-28";
+        final String repoUrl = "http://192.168.18.207:8085/svn/TBB_edge";  // your svn repo URL
+        final String revisionRange = "26;582";
+        final long customStartRevision = -1; // 自訂的開始版本號, 設為 -1 代表使用 revisionRange
         // 輸出設定
         final String outputDir = "./export/svn_diffs";
         final String exportDir = "./export/svn_source";
         final String reportPath = "./export/svn_report.xlsx";
         final String logPath = "./export/console.log";
+        // 其他設定
         final boolean preserveFileStructure = false; // diff need to create directory structure for files?
-
+        
         
         redirectOutput(logPath);
-        
         List<Long> revisions = SVNUtilities.parseRevisions(revisionRange);
-        final long startRevision = revisions.get(0) - 1;
+        final long startRevision = (customStartRevision < 0) ? revisions.get(0) - 1 : customStartRevision;
         final long endRevision = revisions.get(revisions.size() - 1);
         
         try {
