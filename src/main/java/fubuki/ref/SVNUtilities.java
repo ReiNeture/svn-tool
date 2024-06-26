@@ -47,7 +47,7 @@ public class SVNUtilities {
         return modifiedFiles;
     }
 
-    public static List<ModifiedFileEntry> getModifiedFiles(SVNURL url, String revisionRange, SVNClientManager clientManager) throws SVNException {
+    public static List<ModifiedFileEntry> getModifiedFiles(SVNURL url, String revisionRange, SVNClientManager clientManager, String branchPath) throws SVNException {
     	List<Long> revisions = parseRevisions(revisionRange);
     	Set<Long> revisionSet = new HashSet<>(revisions); // 使用 Set 以便快速查找
         Map<String, ModifiedFileEntry> modifiedFilesMap = new HashMap<>();
@@ -57,7 +57,7 @@ public class SVNUtilities {
         SVNRevision startRevision = SVNRevision.create(revisions.get(0));
         SVNRevision endRevision = SVNRevision.create(revisions.get(revisions.size() - 1));
         
-        logClient.doLog(url, new String[]{""}, SVNRevision.UNDEFINED, startRevision, endRevision, true, true, 0,
+        logClient.doLog(url, new String[]{branchPath}, SVNRevision.UNDEFINED, startRevision, endRevision, true, true, 0,
                 logEntry -> {
                     long logEntryRevision = logEntry.getRevision();
                     if (revisionSet.contains(logEntryRevision)) {

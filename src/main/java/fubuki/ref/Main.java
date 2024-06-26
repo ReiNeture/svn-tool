@@ -19,8 +19,9 @@ public class Main {
 
     public static void main(String[] args) {
     	// SVN設定
-        final String repoUrl = "http://192.168.18.207:8085/svn/TBB_edge";  // your svn repo URL
-        final String revisionRange = "26;582";
+        final String repoUrl = "https://192.168.18.41/svn/YuukiKitsu/";  // your svn repo URL
+        final String branchPath = "/trunk"; // 指定的分支路徑
+        final String revisionRange = "17-19";
         final long customStartRevision = -1; // 自訂的開始版本號, 設為 -1 代表使用 revisionRange
         // 輸出設定
         final String outputDir = "./export/svn_diffs";
@@ -40,7 +41,7 @@ public class Main {
             SVNURL url = SVNURL.parseURIEncoded(repoUrl);
             SVNClientManager clientManager = SVNClientManager.newInstance();
             
-            List<ModifiedFileEntry> modifiedFiles = SVNUtilities.getModifiedFiles(url, revisionRange, clientManager);
+            List<ModifiedFileEntry> modifiedFiles = SVNUtilities.getModifiedFiles(url, revisionRange, clientManager, branchPath);
             System.out.println("已取得版本異動清單 size=" + modifiedFiles.size());
             
             DiffGenerator diffGenerator = new DiffGenerator(clientManager);
