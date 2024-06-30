@@ -16,6 +16,7 @@ import java.util.TreeSet;
 import java.util.stream.Collectors;
 
 import org.tmatesoft.svn.core.SVNException;
+import org.tmatesoft.svn.core.SVNLogEntry;
 import org.tmatesoft.svn.core.SVNLogEntryPath;
 import org.tmatesoft.svn.core.SVNNodeKind;
 import org.tmatesoft.svn.core.SVNURL;
@@ -186,4 +187,23 @@ public class SVNUtilities {
         return new ArrayList<>(revisions);
     }
     
+    public static List<SVNLogEntry> getFileHistory(SVNURL url, String filePath, long startRevision, long endRevision, SVNClientManager clientManager) throws SVNException {
+        final List<SVNLogEntry> logEntries = new ArrayList<>();
+        clientManager.getLogClient().doLog(
+                url,
+                new String[] { filePath },
+                SVNRevision.UNDEFINED,
+                SVNRevision.create(startRevision),
+                SVNRevision.create(endRevision),
+                true, // stopOnCopy
+                true, // discoverChangedPaths
+                true, // includeMergedRevisions
+                0, // limit
+                null, // revisionProperties
+                logEntries::add // ISVNLogEntryHandler lambda
+        );
+        
+        return logEntries;
+    }
+
 }

@@ -29,8 +29,9 @@ public class Main {
         final String reportPath = "./export/svn_report.xlsx";
         final String logPath = "./export/console.log";
         // 其他設定
-        final boolean preserveFileStructure = false; // diff need to create directory structure for files?
-        
+        final boolean preserveFileStructure = false; // 差異檔是否建立目錄結構
+        final boolean includeFullHistory = false; // 變更單是否使用完整的歷史紀錄來判斷操作類型
+
         
         redirectOutput(logPath);
         List<Long> revisions = SVNUtilities.parseRevisions(revisionRange);
@@ -53,7 +54,7 @@ public class Main {
             System.out.println("source已匯出完成 size=" + modifiedFiles.size());
             
             ExcelReportGenerator reportGenerator = new ExcelReportGenerator();
-            reportGenerator.generateReport(modifiedFiles, reportPath, startRevision, endRevision, exportDir, url, clientManager);
+            reportGenerator.generateReport(modifiedFiles, reportPath, startRevision, endRevision, exportDir, url, clientManager, includeFullHistory, customStartRevision);
             System.out.println("程式變更單已成功建立 size=" + modifiedFiles.size());
             
             // 打開檔案總管

@@ -5,6 +5,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.apache.poi.ss.usermodel.BorderStyle;
 import org.apache.poi.ss.usermodel.Cell;
@@ -18,6 +19,7 @@ import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFColor;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.tmatesoft.svn.core.SVNException;
+import org.tmatesoft.svn.core.SVNLogEntry;
 import org.tmatesoft.svn.core.SVNLogEntryPath;
 import org.tmatesoft.svn.core.SVNURL;
 import org.tmatesoft.svn.core.wc.SVNClientManager;
@@ -35,7 +37,9 @@ public class ExcelReportGenerator {
         this.styleFactory = new CellStyleFactory(workbook);
     }
 	
-    public void generateReport(List<ModifiedFileEntry> modifiedFiles, String outputFilePath, long startRevision, long endRevision, String sourceDir, SVNURL url, SVNClientManager clientManager) throws IOException, SVNException {
+    public void generateReport(List<ModifiedFileEntry> modifiedFiles, String outputFilePath, long startRevision, long endRevision, String sourceDir, SVNURL url, 
+        SVNClientManager clientManager, boolean includeFullHistory, long customStartRevision) throws IOException, SVNException {
+
         Sheet sheet = workbook.createSheet("SVN Changes");
 
         // 設定字體和表頭樣式
@@ -71,7 +75,20 @@ public class ExcelReportGenerator {
         int index = 1;
         for (ModifiedFileEntry modifiedFileEntry : modifiedFiles) {
             SVNLogEntryPath entry = modifiedFileEntry.getEntryPath();
-            String realModificationType = determineRealModificationType(modifiedFileEntry.getOperations());
+            String realModificationType;
+
+            if (includeFullHistory && customStartRevision != -1) {
+                List<SVNLogEntry> fullHistory = SVNUtilities.getFileHistory(url, entry.getPath(), customStartRevision, endRevision, clientManager);
+                List<Character> operations = fullHistory.stream()
+                        .flatMap(logEntry -> logEntry.getChangedPaths().values().stream())
+                        .filter(path -> path.getPath().equals(entry.getPath()))
+                        .map(SVNLogEntryPath::getType)
+                        .collect(Collectors.toList());
+                        
+                realModificationType = determineRealModificationType(operations);
+            } else {
+                realModificationType = determineRealModificationType(modifiedFileEntry.getOperations());
+            }
 
             Row row = sheet.createRow(rowNum++);
             row.createCell(0).setCellValue(entry.getPath().substring(entry.getPath().lastIndexOf('/') + 1)); // 檔案名稱
@@ -135,7 +152,7 @@ public class ExcelReportGenerator {
                 return "未知";
         }
     }
-    
+
     private String determineRealModificationType(List<Character> operations) {
         char firstType = operations.get(0);
         char lastType = operations.get(operations.size() - 1);
