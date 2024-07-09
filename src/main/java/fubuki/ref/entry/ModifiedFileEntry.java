@@ -9,16 +9,16 @@ import org.tmatesoft.svn.core.SVNLogEntryPath;
 
 public class ModifiedFileEntry {
     private final SVNLogEntryPath entryPath;
-    private final Date commitDate;
+    private Date commitDate;
     private final List<Character> operations;
-    private long lastCommitRevision;  // 新增的屬性
+    private long lastCommitRevision;
 
     public ModifiedFileEntry(SVNLogEntryPath entryPath, Date commitDate, long commitRevision) {
         this.entryPath = entryPath;
         this.commitDate = commitDate;
         this.operations = new ArrayList<>();
         this.operations.add(entryPath.getType());
-        this.lastCommitRevision = commitRevision;  // 初始化
+        this.lastCommitRevision = commitRevision;
     }
 
     public SVNLogEntryPath getEntryPath() {
@@ -33,9 +33,10 @@ public class ModifiedFileEntry {
         return operations;
     }
 
-    public void addOperation(char type, long commitRevision) {
+    public void addOperation(char type, long commitRevision, Date commitDate) {
         this.operations.add(type);
-        this.lastCommitRevision = commitRevision;  // 更新
+        this.lastCommitRevision = commitRevision;
+        this.commitDate = commitDate;
     }
 
     public long getLastCommitRevision() {

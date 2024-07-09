@@ -67,7 +67,7 @@ public class SVNUtilities {
                             .forEach(entryPath -> {
                                 ModifiedFileEntry entry = modifiedFilesMap.computeIfAbsent(entryPath.getPath(), 
                                     k -> new ModifiedFileEntry(entryPath, logEntry.getDate(), logEntry.getRevision()));
-                                entry.addOperation(entryPath.getType(), logEntry.getRevision());
+                                entry.addOperation(entryPath.getType(), logEntry.getRevision(), logEntry.getDate());
                             });
                     }
                 });
